@@ -35,5 +35,5 @@ jobs:
     - name: Analise Estatica
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=lenilsonip_teste_cicd
+      run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=lenilsonip_teste_cicd
         
