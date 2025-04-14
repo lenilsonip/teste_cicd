@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: teste-cicd-db
+    environment:
+      MYSQL_ROOT_PASSWORD: sua_senha_mysql
+      MYSQL_DATABASE: teste_cicd
+      MYSQL_USER: seu_usuario_mysql
+      MYSQL_PASSWORD: sua_senha_mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-useu_usuario_mysql", "-psua_senha_mysql"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - teste-cicd-net
+
+  api:
+    build: .
+    container_name: teste-cicd-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    networks:
+      - teste-cicd-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+networks:
+  teste-cicd-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
