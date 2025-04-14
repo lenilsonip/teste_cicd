@@ -20,6 +20,9 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
+    - name: Build do projeto Maven
+      run: mvn clean package -DskipTests
+
     - name: Verifica versão do Docker Compose
       run: docker compose version
 
