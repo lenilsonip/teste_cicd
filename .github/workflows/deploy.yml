@@ -25,7 +25,7 @@ jobs:
       run: docker compose version
 
     - name: Gera imagem com tag
-      run: docker build -t teste-cicd .
+      run: docker build --no-cache -t teste-cicd .
 
     - name: Sobe containers com Docker Compose
       run: docker compose up -d --build
