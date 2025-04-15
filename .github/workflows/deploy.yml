@@ -24,8 +24,8 @@ jobs:
     - name: Verifica versão do Docker Compose
       run: docker compose version
 
-    - name: Gera imagem com tag
-      run: docker build --no-cache -t teste-cicd .
+    - name: Gera imagem com tag :latest
+      run: docker build --no-cache -t teste-cicd:latest .
 
     - name: Sobe containers com Docker Compose
       run: docker compose up -d --build
@@ -39,7 +39,7 @@ jobs:
         echo "$PRIVATE_KEY" > deploy_key.pem
         chmod 600 deploy_key.pem
 
-        docker save -o teste-cicd.tar teste-cicd
+        docker save -o teste-cicd.tar teste-cicd:latest
 
         scp -o StrictHostKeyChecking=no -i deploy_key.pem teste-cicd.tar $USER@$HOST:/home/ubuntu/
         scp -o StrictHostKeyChecking=no -i deploy_key.pem script-deploy.sh $USER@$HOST:/home/ubuntu/
