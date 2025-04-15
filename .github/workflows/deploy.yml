@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -22,6 +25,24 @@ jobs:
           source: "docker-compose.yml"
           target: "/home/ubuntu"
 
+      - name: Copiar Dockerfile para EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "Dockerfile"
+          target: "/home/ubuntu"
+
+      - name: Copiar JAR para EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "target/teste-cicd-0.0.1-SNAPSHOT.jar"
+          target: "/home/ubuntu"
+
       - name: Conectar via SSH e fazer deploy
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -30,10 +51,14 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu
-            echo "🔍 Verificando versão do Docker Compose..."
+            echo "Verificando versão do Docker Compose..."
             docker compose version || (echo "Docker Compose não encontrado." && exit 1)
             echo "Parando containers antigos..."
             docker compose down
+            echo "Removendo imagens antigas..."
+            docker image prune -f
             echo "Subindo containers atualizados..."
             docker compose up -d --build
+            echo "Containers em execução:"
+            docker compose ps
             echo "Deploy finalizado!"
