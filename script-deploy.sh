@@ -1,17 +1,18 @@
-#! /bin/bash
+#!/bin/bash
 
+echo "==> Carregando imagem Docker..."
 docker load -i teste-cicd.tar
 
-container_ids=$(docker ps -q)
-
-if [ -z "$container_ids" ]; then
-  echo "Não há containers em execução"
-else
-  for container_id in $container_ids; do
-    echo "Parando container: $container_id"
-    docker stop $container_id
-  done
-  echo "Todos os containers em execução foram parados."
+echo "==> Verificando se docker-compose.yml existe..."
+if [ ! -f docker-compose.yml ]; then
+  echo "Arquivo docker-compose.yml não encontrado no diretório atual!"
+  exit 1
 fi
 
-docker compose up -d
+echo "==> Parando containers antigos (se houver)..."
+docker compose down
+
+echo "==> Subindo containers..."
+docker compose up -d --build
+
+echo "==> Deploy concluído."
