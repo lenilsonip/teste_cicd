@@ -1,4 +1,4 @@
-name: deploy teste-cicd
+name: Deploy teste-cicd
 
 on:
   push:
@@ -24,8 +24,11 @@ jobs:
     - name: Verifica versão do Docker Compose
       run: docker compose version
 
+    - name: Gera imagem com tag
+      run: docker build -t teste-cicd .
+
     - name: Sobe containers com Docker Compose
-      run: docker compose up -d
+      run: docker compose up -d --build
 
     - name: Deploy para EC2
       env: 
@@ -39,9 +42,10 @@ jobs:
         docker save -o teste-cicd.tar teste-cicd
 
         scp -o StrictHostKeyChecking=no -i deploy_key.pem teste-cicd.tar $USER@$HOST:/home/ubuntu/
+        scp -o StrictHostKeyChecking=no -i deploy_key.pem script-deploy.sh $USER@$HOST:/home/ubuntu/
 
+        ssh -o StrictHostKeyChecking=no -i deploy_key.pem $USER@$HOST "chmod +x script-deploy.sh && ./script-deploy.sh"
 
-        ssh -i deploy_key.pem $USER@$HOST "chmod +x script-deploy.sh && ./script-deploy.sh"
-
-        
-        
+    - name: Limpa chave de deploy
+      if: always()
+      run: rm -f deploy_key.pem
