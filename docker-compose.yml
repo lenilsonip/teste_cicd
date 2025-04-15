@@ -25,6 +25,7 @@ services:
 
   api:
     build: .
+    image: teste-cicd   # <-- adiciona isso!
     container_name: teste-cicd-api
     restart: unless-stopped
     ports:
@@ -42,6 +43,7 @@ services:
       timeout: 5s
       retries: 3
       start_period: 40s
+
 
 networks:
   teste-cicd-net:
