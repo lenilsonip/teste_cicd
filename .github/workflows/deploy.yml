@@ -25,6 +25,9 @@ jobs:
       - name: Build Docker image
         run: docker build -t teste-cicd:latest .
 
+      - name: Print EC2 IP
+        run: echo "EC2 IP: ${{ secrets.EC2_IP }}"
+
       - name: Ping EC2
         run: ping ${{ secrets.EC2_IP }} -c 4
 
