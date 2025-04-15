@@ -27,7 +27,7 @@ jobs:
     - name: Gera imagem com tag :latest
       run: docker build --no-cache -t teste-cicd:latest .
 
-    - name: Sobe containers com Docker Compose
+    - name: Sobe containers localmente (opcional — pode remover se for só pro EC2)
       run: docker compose up -d --build
 
     - name: Deploy para EC2
@@ -43,6 +43,7 @@ jobs:
 
         scp -o StrictHostKeyChecking=no -i deploy_key.pem teste-cicd.tar $USER@$HOST:/home/ubuntu/
         scp -o StrictHostKeyChecking=no -i deploy_key.pem script-deploy.sh $USER@$HOST:/home/ubuntu/
+        scp -o StrictHostKeyChecking=no -i deploy_key.pem docker-compose.yml $USER@$HOST:/home/ubuntu/
 
         ssh -o StrictHostKeyChecking=no -i deploy_key.pem $USER@$HOST "chmod +x script-deploy.sh && ./script-deploy.sh"
 
