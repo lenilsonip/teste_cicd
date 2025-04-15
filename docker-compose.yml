@@ -15,7 +15,7 @@ services:
       - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "seu_usuario_mysql", "-p", "sua_senha_mysql"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "seu_usuario_mysql", "-psua_senha_mysql"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,8 +24,10 @@ services:
       - teste-cicd-net
 
   api:
-    build: .
-    image: teste-cicd   # <-- Use a tag aqui para garantir que a imagem seja construída corretamente
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: teste-cicd:latest
     container_name: teste-cicd-api
     restart: unless-stopped
     ports:
@@ -34,7 +36,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      SPRING_PROFILES_ACTIVE: prod
     networks:
       - teste-cicd-net
     healthcheck:
@@ -43,7 +45,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 40s
-
 
 networks:
   teste-cicd-net:
