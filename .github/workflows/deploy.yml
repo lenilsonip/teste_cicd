@@ -30,5 +30,10 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu
-            docker-compose down
-            docker-compose up -d --build
+            echo "🔍 Verificando versão do Docker Compose..."
+            docker compose version || (echo "Docker Compose não encontrado." && exit 1)
+            echo "Parando containers antigos..."
+            docker compose down
+            echo "Subindo containers atualizados..."
+            docker compose up -d --build
+            echo "Deploy finalizado!"
