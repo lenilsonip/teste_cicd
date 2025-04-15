@@ -1,52 +1,34 @@
-name: Deploy teste-cicd
+name: Deploy API na EC2
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout do código
+        uses: actions/checkout@v4
 
-    - name: Configura JDK 21
-      uses: actions/setup-java@v3
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        cache: maven
+      - name: Copiar docker-compose.yml para EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "/home/ubuntu"
 
-    - name: Build do projeto Maven
-      run: mvn clean package -DskipTests
-
-    - name: Verifica versão do Docker Compose
-      run: docker compose version
-
-    - name: Gera imagem com tag :latest
-      run: docker build --no-cache -t teste-cicd:latest .
-
-    - name: Sobe containers localmente (opcional — pode remover se for só pro EC2)
-      run: docker compose up -d --build
-
-    - name: Deploy para EC2
-      env: 
-        PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
-        USER: ubuntu
-        HOST: 184.73.95.224
-      run: |
-        echo "$PRIVATE_KEY" > deploy_key.pem
-        chmod 600 deploy_key.pem
-
-        docker save -o teste-cicd.tar teste-cicd:latest
-
-        scp -o StrictHostKeyChecking=no -i deploy_key.pem teste-cicd.tar $USER@$HOST:/home/ubuntu/
-        scp -o StrictHostKeyChecking=no -i deploy_key.pem script-deploy.sh $USER@$HOST:/home/ubuntu/
-        scp -o StrictHostKeyChecking=no -i deploy_key.pem docker-compose.yml $USER@$HOST:/home/ubuntu/
-
-        ssh -o StrictHostKeyChecking=no -i deploy_key.pem $USER@$HOST "chmod +x script-deploy.sh && ./script-deploy.sh"
-
-    - name: Limpa chave de deploy
-      if: always()
-      run: rm -f deploy_key.pem
+      - name: Conectar via SSH e fazer deploy
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu
+            docker-compose down
+            docker-compose up -d --build
