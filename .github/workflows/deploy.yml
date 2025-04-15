@@ -25,6 +25,9 @@ jobs:
       - name: Build Docker image
         run: docker build -t teste-cicd:latest .
 
+      - name: Ping EC2
+        run: ping ${{ secrets.EC2_IP }} -c 4
+
       - name: SSH Deploy
         uses: webfactory/ssh-agent@v0.8.0
         with:
