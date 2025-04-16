@@ -1,17 +1,15 @@
-# Use a imagem do OpenJDK 21 como base
-FROM openjdk:21-jdk-slim
+# Base com OpenJDK 21 e Maven
+FROM maven:3.9.6-eclipse-temurin-21 as builder
 
-# Diretório de trabalho
-WORKDIR /app
+# Instalando Docker e Docker Compose no container
+USER root
 
-# Adicione o arquivo JAR da sua aplicação
-COPY target/teste-cicd-0.0.1-SNAPSHOT.jar app.jar
+RUN apt-get update && \
+    apt-get install -y docker.io docker-compose && \
+    rm -rf /var/lib/apt/lists/*
 
-# Defina a variável de ambiente para a porta
-ENV SERVER_PORT=8080
+WORKDIR /workspace
 
-# Exponha a porta da aplicação
 EXPOSE 8080
 
-# Comando para rodar a aplicação
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+CMD ["/bin/bash"]
