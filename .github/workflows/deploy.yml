@@ -71,6 +71,22 @@ jobs:
           source: "./target/teste-cicd-0.0.1-SNAPSHOT.jar"
           target: "/home/ubuntu/"
 
+      - name: Matar processo Java se estiver rodando
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Verifica se o processo java está rodando e mata se necessário
+            pid=$(pgrep -f 'java -jar teste-cicd-0.0.1-SNAPSHOT.jar')
+            if [ -n "$pid" ]; then
+              echo "Processo Java encontrado (PID: $pid), matando o processo..."
+              kill -9 $pid
+            else
+              echo "Nenhum processo Java encontrado, prosseguindo com o deploy..."
+            fi
+
       - name: Executar aplicação na EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
