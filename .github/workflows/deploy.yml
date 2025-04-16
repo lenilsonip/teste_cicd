@@ -22,29 +22,8 @@ jobs:
       - name: Build do projeto com Maven
         run: mvn clean package -DskipTests
 
-      - name: Verificar Docker na EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          script: |
-            if ! command -v docker &> /dev/null
-            then
-                echo "Docker não encontrado, instalando..."
-                sudo yum install -y docker
-                sudo service docker start
-                sudo usermod -aG docker ec2-user
-            else
-                echo "Docker já está instalado."
-            fi
-            if ! command -v docker-compose &> /dev/null
-            then
-                echo "Docker Compose não encontrado, instalando..."
-                sudo yum install -y docker-compose
-            else
-                echo "Docker Compose já está instalado."
-            fi
+      - name: Verificar arquivo JAR
+        run: ls -l target/
 
       - name: Copiar JAR para EC2 via SCP
         uses: appleboy/scp-action@v0.1.4
@@ -54,6 +33,9 @@ jobs:
           key: ${{ secrets.KEY }}
           source: "target/teste-cicd-0.0.1-SNAPSHOT.jar"
           target: "~/teste_cicd/target/"
+
+      - name: Verificar se o JAR foi copiado para o EC2
+        run: ssh -i ${{ secrets.KEY }} -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} "ls -l ~/teste_cicd/target/"
 
       - name: Deploy na EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
