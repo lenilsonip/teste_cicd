@@ -9,6 +9,9 @@ jobs:
   build-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      SPRING_PROFILE: dev
+
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
@@ -75,4 +78,4 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            nohup java -jar teste-cicd-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+            nohup java -jar teste-cicd-0.0.1-SNAPSHOT.jar --spring.profiles.active=${SPRING_PROFILE} > app.log 2>&1 &
