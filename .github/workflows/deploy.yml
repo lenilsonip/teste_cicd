@@ -1,44 +1,78 @@
-name: Build and Deploy Java Maven App
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  build-and-deploy:
+  build-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do código
+      - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Configurar Java 21
+      - name: Setup JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
           java-version: '21'
+          distribution: 'temurin'
 
-      - name: Cache do Maven
-        uses: actions/cache@v4
+      - name: Build aplicação
+        run: mvn clean package
+
+      - name: Enviar setup.sh para EC2
+        uses: appleboy/scp-action@v0.1.7
         with:
-          path: |
-            ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "./setup.sh"
+          target: "/home/ubuntu/"
 
-      - name: Build com Maven
-        run: mvn clean package -DskipTests
+      - name: Executar setup.sh na EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            chmod +x setup.sh
+            ./setup.sh
 
-      - name: Configurar SSH e enviar JAR para EC2
-        env:
-          EC2_HOST: ec2-3-87-88-132.compute-1.amazonaws.com
-          EC2_USER: ubuntu
-        run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
-          chmod 600 key.pem
-          scp -i key.pem -o StrictHostKeyChecking=no target/teste-cicd-0.0.1-SNAPSHOT.jar $EC2_USER@$EC2_HOST:/home/ubuntu/
+      - name: Enviar docker-compose.mysql.yml para EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "./docker-compose.mysql.yml"
+          target: "/home/ubuntu/"
+
+      - name: Subir MySQL container via Docker Compose
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker compose -f docker-compose.mysql.yml up -d
+
+      - name: Enviar aplicação .jar para EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "./target/teste-cicd-0.0.1-SNAPSHOT.jar"
+          target: "/home/ubuntu/"
+
+      - name: Executar aplicação na EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            nohup java -jar teste-cicd-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
