@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main  # ou a branch que você deseja usar
+      - main  # branch que dispara o deploy
 
 jobs:
   deploy:
@@ -13,13 +13,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Set up SSH
+    - name: Deploy via SSH na EC2
       uses: appleboy/ssh-action@v1.0.3
       with:
-        host: ${{ secrets.EC2_HOST }}  # Endereço IP ou domínio da sua EC2
-        username: ${{ secrets.EC2_USERNAME }}  # Usuário da EC2
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}  # A chave privada que você adicionou nos secrets
-        port: 22  # Porta do SSH
+        host: ${{ secrets.EC2_HOST }}  # IP público da sua instância EC2
+        username: ec2-user  # usuário padrão da EC2 Amazon Linux
+        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}  # chave privada salva nos secrets
+        port: 22
         script: |
           cd ~/teste_cicd || git clone https://github.com/lenilsonip/teste_cicd.git && cd teste_cicd
           git pull
