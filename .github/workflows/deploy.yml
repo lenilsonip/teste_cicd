@@ -42,3 +42,10 @@ jobs:
           pkill -f 'teste-cicd-0.0.1-SNAPSHOT.jar' || true
           echo "Subindo nova aplicação..."
           nohup java -jar /home/ubuntu/teste-cicd-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+          sleep 5
+          echo "Verificando se a aplicação está respondendo..."
+          if curl -s -o /dev/null -w "%{http_code}" http://localhost:8080 | grep -q "200"; then
+            echo "✅ Aplicação no ar e respondendo com status 200!"
+          else
+            echo "❌ Aplicação não respondeu corretamente. Verifique os logs na EC2."
+          fi
