@@ -1,24 +1,26 @@
-name: Deploy API no EC2
+name: Deploy to EC2
 
 on:
   push:
     branches:
-      - main
+      - main  # ou a branch que você deseja usar
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout código
-      uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-    - name: Conectar na EC2 e fazer deploy
+    - name: Set up SSH
       uses: appleboy/ssh-action@v1.0.3
       with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        host: ${{ secrets.EC2_HOST }}  # Endereço IP ou domínio da sua EC2
+        username: ec2-user  # Usuário da EC2
+        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}  # A chave privada que você adicionou nos secrets
+        port: 22  # Porta do SSH
+        add_ssh_known_hosts: true  # Adiciona a chave pública do servidor EC2 automaticamente
         script: |
           cd ~/teste_cicd || git clone https://github.com/lenilsonip/teste_cicd.git && cd teste_cicd
           git pull
