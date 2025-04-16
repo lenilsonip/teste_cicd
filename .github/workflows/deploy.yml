@@ -25,9 +25,6 @@ jobs:
       - name: Build Docker image
         run: docker build -t teste-cicd:latest .
 
-      - name: Print EC2 IP
-        run: echo "EC2 IP: ${{ secrets.EC2_IP }}"
-
       - name: Ping EC2
         run: ping ${{ secrets.EC2_IP }} -c 4
 
@@ -38,8 +35,8 @@ jobs:
 
       - name: SSH Commands
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_IP }} "
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_IP }} '
             docker-compose down;
             docker-compose pull;
             docker-compose up -d
-          "
+          '
