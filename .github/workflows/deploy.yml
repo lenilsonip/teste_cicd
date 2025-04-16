@@ -22,6 +22,13 @@ jobs:
       - name: Build do projeto com Maven
         run: mvn clean package -DskipTests
 
+      - name: Instalar Docker na EC2
+        run: |
+          sudo yum install -y docker
+          sudo service docker start
+          sudo usermod -aG docker ec2-user
+          sudo yum install -y docker-compose
+
       - name: Copiar JAR para EC2 via SCP
         uses: appleboy/scp-action@v0.1.4
         with:
