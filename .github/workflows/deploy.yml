@@ -1,1 +1,26 @@
+name: Deploy API no EC2
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    - name: Conectar na EC2 e fazer deploy
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd ~/teste_cicd || git clone https://github.com/lenilsonip/teste_cicd.git && cd teste_cicd
+          git pull
+          docker-compose down
+          docker-compose up -d --build
