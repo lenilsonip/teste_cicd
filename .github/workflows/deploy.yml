@@ -6,23 +6,31 @@ on:
       - main
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout do código
-      uses: actions/checkout@v4
+    # Checkout do código
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-    - name: Configurar JDK 21
-      uses: actions/setup-java@v4
+    # Configura o JDK 21 para compilar a aplicação
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
       with:
-        distribution: 'temurin'
+        distribution: 'temurin'  # Alterado de 'adoptopenjdk' para 'temurin'
         java-version: '21'
 
-    - name: Build com Maven
+    # Instalar dependências e compilar o projeto com Maven
+    - name: Build with Maven
       run: mvn clean package -DskipTests
 
-    - name: Enviar JAR para EC2
+    # Verificar se o arquivo JAR foi gerado corretamente
+    - name: Verificar JAR gerado
+      run: ls -l target/
+
+    # Copiar o arquivo JAR para a EC2 via SCP
+    - name: Copiar JAR para EC2 via SCP
       uses: appleboy/scp-action@v0.1.4
       with:
         host: ${{ secrets.HOST }}
@@ -31,14 +39,8 @@ jobs:
         source: "target/teste-cicd-0.0.1-SNAPSHOT.jar"
         target: "~/teste_cicd/target/"
 
-    - name: Clonar repositório no EC2 (caso o código não esteja lá)
-      run: |
-        ssh -i ${{ secrets.KEY }} ubuntu@${{ secrets.HOST }} << 'EOF'
-          cd ~
-          git clone https://github.com/seu-usuario/seu-repositorio.git teste_cicd || echo "Repositório já clonado"
-        EOF
-
-    - name: Deploy via SSH na EC2
+    # Conectar via SSH e rodar o docker-compose na EC2
+    - name: Deploy na EC2 via SSH
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.HOST }}
