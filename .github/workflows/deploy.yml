@@ -17,7 +17,7 @@ jobs:
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.EC2_HOST }}  # Endereço IP ou domínio da sua EC2
-        username: ec2-user  # Usuário da EC2
+        username: ${{ secrets.EC2_USERNAME }}  # Usuário da EC2
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}  # A chave privada que você adicionou nos secrets
         port: 22  # Porta do SSH
         add_ssh_known_hosts: true  # Adiciona a chave pública do servidor EC2 automaticamente
