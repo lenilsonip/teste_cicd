@@ -1,27 +1,43 @@
-name: Deploy to EC2
+name: Deploy CI/CD EC2 Docker
 
 on:
   push:
     branches:
-      - main  # branch que dispara o deploy
+      - main  # ou o branch que quiser disparar o deploy
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout do código
+        uses: actions/checkout@v4
 
-    - name: Deploy via SSH na EC2
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.EC2_HOST }}  # IP público da sua instância EC2
-        username: ec2-user  # usuário padrão da EC2 Amazon Linux
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}  # chave privada salva nos secrets
-        port: 22
-        script: |
-          cd ~/teste_cicd || git clone https://github.com/lenilsonip/teste_cicd.git && cd teste_cicd
-          git pull
-          docker-compose down
-          docker-compose up -d --build
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build do projeto com Maven
+        run: mvn clean package -DskipTests
+
+      - name: Copiar JAR para EC2 via SCP
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          source: "target/teste-cicd-0.0.1-SNAPSHOT.jar"
+          target: "~/teste_cicd/target/"
+
+      - name: Deploy na EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd ~/teste_cicd
+            docker-compose down
+            docker-compose up -d --build
