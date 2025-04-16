@@ -1,52 +1,52 @@
-name: Deploy CI/CD EC2 Docker
+name: Deploy to AWS EC2 via Docker
 
 on:
   push:
     branches:
-      - main  # ou o branch que quiser disparar o deploy
+      - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
+    # Checkout do código
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+    # Configura o JDK 21 para compilar a aplicação
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'adoptopenjdk'
+        version: '21'
 
-      - name: Build do projeto com Maven
-        run: mvn clean package -DskipTests
+    # Instalar dependências e compilar o projeto com Maven
+    - name: Build with Maven
+      run: mvn clean package -DskipTests
 
-      - name: Verificar se o JAR foi gerado
-        run: ls -l target/
+    # Verificar se o arquivo JAR foi gerado corretamente
+    - name: Verificar JAR gerado
+      run: ls -l target/
 
-      - name: Copiar JAR para EC2 via SCP
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          source: "target/teste-cicd-0.0.1-SNAPSHOT.jar"
-          target: "~/teste_cicd/target/"
+    # Copiar o arquivo JAR para a EC2 via SCP
+    - name: Copiar JAR para EC2 via SCP
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        source: "target/teste-cicd-0.0.1-SNAPSHOT.jar"
+        target: "~/teste_cicd/target/"
 
-      - name: Verificar se o JAR foi copiado para o EC2
-        run: |
-          echo "${{ secrets.KEY }}" > /tmp/private_key.pem
-          chmod 600 /tmp/private_key.pem
-          ssh -i /tmp/private_key.pem -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} "ls -l ~/teste_cicd/target/"
-
-      - name: Deploy na EC2 via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          script: |
-            cd ~/teste_cicd
-            docker-compose down
-            docker-compose up -d --build
+    # Conectar via SSH e rodar o docker-compose na EC2
+    - name: Deploy na EC2 via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        script: |
+          cd ~/teste_cicd
+          docker-compose down
+          docker-compose up -d --build
