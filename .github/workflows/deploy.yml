@@ -1,4 +1,4 @@
-name: Build Java Maven App
+name: Build and Deploy Java Maven App
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,3 +33,12 @@ jobs:
 
       - name: Build com Maven
         run: mvn clean package -DskipTests
+
+      - name: Configurar SSH e enviar JAR para EC2
+        env:
+          EC2_HOST: ec2-3-87-88-132.compute-1.amazonaws.com
+          EC2_USER: ubuntu
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
+          chmod 600 key.pem
+          scp -i key.pem -o StrictHostKeyChecking=no target/teste-cicd-0.0.1-SNAPSHOT.jar $EC2_USER@$EC2_HOST:/home/ubuntu/
