@@ -19,7 +19,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: 'adoptopenjdk'
-        version: '21'
+        java-version: '21'  # Corrigido: use 'java-version' no lugar de 'version'
 
     # Instalar dependências e compilar o projeto com Maven
     - name: Build with Maven
