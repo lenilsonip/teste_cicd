@@ -1,6 +1,9 @@
 # Use a imagem do OpenJDK 21 como base
 FROM openjdk:21-jdk-slim
 
+# Diretório de trabalho
+WORKDIR /app
+
 # Adicione o arquivo JAR da sua aplicação
 COPY target/teste-cicd-0.0.1-SNAPSHOT.jar app.jar
 
@@ -11,4 +14,4 @@ ENV SERVER_PORT=8080
 EXPOSE 8080
 
 # Comando para rodar a aplicação
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
