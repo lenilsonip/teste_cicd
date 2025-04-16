@@ -22,9 +22,6 @@ jobs:
       - name: Build do projeto com Maven
         run: mvn clean package -DskipTests
 
-      - name: Verificar arquivo JAR
-        run: ls -l target/
-
       - name: Copiar JAR para EC2 via SCP
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -35,7 +32,10 @@ jobs:
           target: "~/teste_cicd/target/"
 
       - name: Verificar se o JAR foi copiado para o EC2
-        run: ssh -i ${{ secrets.KEY }} -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} "ls -l ~/teste_cicd/target/"
+        run: |
+          echo "${{ secrets.KEY }}" > /tmp/private_key.pem
+          chmod 600 /tmp/private_key.pem
+          ssh -i /tmp/private_key.pem -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} "ls -l ~/teste_cicd/target/"
 
       - name: Deploy na EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
