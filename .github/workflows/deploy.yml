@@ -28,7 +28,7 @@ jobs:
       - name: Enviar setup.sh para EC2
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          host: ec2-18-205-119-113.compute-1.amazonaws.com
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "./setup.sh"
@@ -37,7 +37,7 @@ jobs:
       - name: Executar setup.sh na EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          host: ec2-18-205-119-113.compute-1.amazonaws.com
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
@@ -47,7 +47,7 @@ jobs:
       - name: Enviar docker-compose.mysql.yml para EC2
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          host: ec2-18-205-119-113.compute-1.amazonaws.com
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "./docker-compose.mysql.yml"
@@ -56,7 +56,7 @@ jobs:
       - name: Subir MySQL container via Docker Compose
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          host: ec2-18-205-119-113.compute-1.amazonaws.com
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
@@ -65,7 +65,7 @@ jobs:
       - name: Enviar aplicação .jar para EC2
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          host: ec2-18-205-119-113.compute-1.amazonaws.com
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "./target/teste-cicd-0.0.1-SNAPSHOT.jar"
@@ -74,7 +74,7 @@ jobs:
       - name: Executar aplicação na EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ec2-3-87-88-132.compute-1.amazonaws.com
+          host: ec2-18-205-119-113.compute-1.amazonaws.com
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
