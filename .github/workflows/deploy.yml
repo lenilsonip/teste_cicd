@@ -27,6 +27,8 @@ jobs:
 
       - name: Login no Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
+        with:
+          region: us-east-2  # Adiciona a região
 
       - name: Build e push da imagem para ECR
         env:
