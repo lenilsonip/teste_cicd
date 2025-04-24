@@ -27,8 +27,14 @@ jobs:
 
       - name: Login no Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: private
+          mask-password: true
+          skip-logout: false
         env:
-          AWS_REGION: us-east-2  # Adiciona a variável de ambiente para a região
+          AWS_REGION: us-east-2
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Build e push da imagem para ECR
         env:
